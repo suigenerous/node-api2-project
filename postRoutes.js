@@ -9,8 +9,19 @@ router.post('/', (req, res) => {
     const body = req.body;
     if (body.title && body.contents){
         try {
-            db.insert(body);
-            res.status(201).json({data: body});
+            db.insert(body)
+                .then (r => {
+                    db.find(r.id)
+                        .then(r => {
+                            res.status(201).json({data: r});
+                        })
+                        .catch (err => {
+                            res.status(500).json({ error: "There was an error while saving the post to the database" });
+                        });
+                })
+                .catch (err => {
+                    res.status(500).json({ error: "There was an error while saving the post to the database" });
+                });
         } catch {
             res.status(500).json({ error: "There was an error while saving the post to the database" });
         };
@@ -28,10 +39,10 @@ router.post('/:id/comments', (res, req) => {
         try {
             const comment = {text: body.text, post_id: id};
             db.insertComment(comment)
-                .then(res => {
-                    db.findCommentById(res.id)
-                        .then(res => {
-                            res.status(201).json({data: res});
+                .then(r => {
+                    db.findCommentById(r.id)
+                        .then(r => {
+                            res.status(201).json({data: r});
                         })
                         .catch (err => {
                             res.status(500).json({ error: "There was an error while saving the comment to the database" });
@@ -53,9 +64,9 @@ router.post('/:id/comments', (res, req) => {
 router.get('/', (res, req) => {
     try {
         db.find()
-            .then(res => {
-                if (res != []){
-                    res.status(200).json({data: res});
+            .then(r => {
+                if (r != []){
+                    res.status(200).json({data: r});
                 }
                 else {
                     res.status(500).json({ error: "The posts information could not be retrieved." });
@@ -75,9 +86,9 @@ router.get('/:id', (res, req) => {
     try {
         const id = req.params.id;
         db.findById(id)
-            .then (res => {
-                if (res != []){
-                    res.status(200).json({data: res});
+            .then (r => {
+                if (r != []){
+                    res.status(200).json({data: r});
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
                 };
@@ -96,9 +107,9 @@ router.get('/:id/comments', (res, req) => {
     try {
         const id = req.params.id;
         db.findPostComments(id)
-            .then (res => {
-                if (res != []){
-                    res.status(200).json({data: res});
+            .then (r => {
+                if (r != []){
+                    res.status(200).json({data: r});
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
                 };
@@ -116,12 +127,12 @@ router.delete('/:id', (res, req) => {
     try {
         const id = req.params.id;
         db.findById(id)
-            .then (res => {
-                if (res != []){
+            .then (r => {
+                if (r != []){
                     try{
                         db.remove(id)
                             .then(res2 => {
-                                res.status(204).json({data: res});
+                                res.status(204).json({data: r});
                             })
                             .catch (err => {
                                 res.status(500).json({ error: "The post could not be removed" });
@@ -142,6 +153,48 @@ router.delete('/:id', (res, req) => {
 });
 
 // put request for editing a post
+
+router.put('/:id', (res, req) => {
+    const id = req.params.id;
+    const body = req.body;
+    db.findById(id)
+        .then (r => {
+            if (r != []){
+                if (body.title && body.contents){
+                    try {
+                        db.update(id, body)
+                            .then (r => {
+                                if (r == 1){
+                                    db.findById(id)
+                                        .then (r => {
+                                            res.status(200).json({data: r});
+                                        })
+                                        .catch (err => {
+                                            res.status(500).json({ error: "The post information could not be modified." });
+                                        });
+                                }
+                                else {
+                                    res.status(500).json({ error: "The post information could not be modified." });
+                                }
+                            })
+                            .catch (err => {
+                                res.status(500).json({ error: "The post information could not be modified." });
+                            });
+                    } catch {
+                        res.status(500).json({ error: "The post information could not be modified." });
+                    }
+                } else {
+                    res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
+                };
+            } else {
+                res.status(404).json({ message: "The post with the specified ID does not exist." });
+            }
+        })
+        .catch (err => {
+            res.status(404).json({ message: "The post with the specified ID does not exist." });
+        });
+})
+
 
 // export router instance
 module.exports = router;
