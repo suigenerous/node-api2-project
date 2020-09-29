@@ -67,12 +67,49 @@ router.get('/', (res, req) => {
     } catch {
         res.status(500).json({ error: "The posts information could not be retrieved." });
     };
-})
+});
 
 // get request for returning specific post
 
+router.get('/:id', (res, req) => {
+    try {
+        const id = req.params.id;
+        db.findById(id)
+            .then (res => {
+                if (res != []){
+                    res.status(200).json({data: res});
+                } else {
+                    res.status(404).json({ message: "The post with the specified ID does not exist." });
+                };
+            })
+            .catch (err => {
+                res.status(500).json({ error: "The post information could not be retrieved." });
+            });
+    } catch {
+        res.status(500).json({ error: "The post information could not be retrieved." });
+    };
+});
+
 // get request to return comments for a specific post
 
+router.get('/:id/comments', (res, req) => {
+    try {
+        const id = req.params.id;
+        db.findPostComments(id)
+            .then (res => {
+                if (res != []){
+                    res.status(200).json({data: res});
+                } else {
+                    res.status(404).json({ message: "The post with the specified ID does not exist." });
+                };
+            })
+            .catch (err => {
+                res.status(404).json({ message: "The post with the specified ID does not exist." });
+            });
+    } catch {
+        res.status(500).json({ error: "The comments information could not be retrieved." });
+    }
+});
 // delete request for removing a post
 
 // put request for editing a post
