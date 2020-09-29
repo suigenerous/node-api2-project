@@ -11,15 +11,15 @@ router.post('/', (req, res) => {
         try {
             db.insert(body)
                 .then (r => {
-                    db.find(r.id)
-                        .then(r => {
-                            res.status(201).json({data: r});
+                    db.findById(r.id)
+                        .then(post => {
+                            res.status(201).json({data: post});
                         })
-                        .catch (err => {
+                        .catch(err => {
                             res.status(500).json({ error: "There was an error while saving the post to the database" });
                         });
                 })
-                .catch (err => {
+                .catch(err => {
                     res.status(500).json({ error: "There was an error while saving the post to the database" });
                 });
         } catch {
@@ -32,23 +32,23 @@ router.post('/', (req, res) => {
 
 // post request for adding comment to a new post
 
-router.post('/:id/comments', (res, req) => {
-    const id = req.params.id;
+router.post('/:id/comments', (req, res) => {
     const body = req.body;
     if (body.text){
         try {
+            const id = req.params.id;
             const comment = {text: body.text, post_id: id};
             db.insertComment(comment)
                 .then(r => {
                     db.findCommentById(r.id)
-                        .then(r => {
-                            res.status(201).json({data: r});
+                        .then(r2 => {
+                            res.status(201).json({data: r2});
                         })
                         .catch (err => {
                             res.status(500).json({ error: "There was an error while saving the comment to the database" });
                         });
                 })
-                .catch (err => {
+                .catch(err => {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
                 });
         } catch {
@@ -61,7 +61,7 @@ router.post('/:id/comments', (res, req) => {
 
 // get request for returning posts
 
-router.get('/', (res, req) => {
+router.get('/', (req, res) => {
     try {
         db.find()
             .then(r => {
@@ -72,28 +72,29 @@ router.get('/', (res, req) => {
                     res.status(500).json({ error: "The posts information could not be retrieved." });
                 };
             })
-            .catch (err => {
+            .catch(err => {
                 res.status(500).json({ error: "The posts information could not be retrieved." });
-            })
+            });
     } catch {
         res.status(500).json({ error: "The posts information could not be retrieved." });
     };
+    
 });
 
 // get request for returning specific post
 
-router.get('/:id', (res, req) => {
+router.get('/:id', (req, res) => {
     try {
         const id = req.params.id;
         db.findById(id)
-            .then (r => {
+            .then(r => {
                 if (r != []){
                     res.status(200).json({data: r});
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
                 };
             })
-            .catch (err => {
+            .catch(err => {
                 res.status(500).json({ error: "The post information could not be retrieved." });
             });
     } catch {
@@ -103,18 +104,18 @@ router.get('/:id', (res, req) => {
 
 // get request to return comments for a specific post
 
-router.get('/:id/comments', (res, req) => {
+router.get('/:id/comments', (req, res) => {
     try {
         const id = req.params.id;
         db.findPostComments(id)
-            .then (r => {
+            .then(r => {
                 if (r != []){
                     res.status(200).json({data: r});
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
                 };
             })
-            .catch (err => {
+            .catch(err => {
                 res.status(404).json({ message: "The post with the specified ID does not exist." });
             });
     } catch {
@@ -123,18 +124,18 @@ router.get('/:id/comments', (res, req) => {
 });
 // delete request for removing a post
 
-router.delete('/:id', (res, req) => {
+router.delete('/:id', (req, res) => {
     try {
         const id = req.params.id;
         db.findById(id)
-            .then (r => {
+            .then(r => {
                 if (r != []){
                     try{
                         db.remove(id)
-                            .then(res2 => {
+                            .then(r2 => {
                                 res.status(204).json({data: r});
                             })
-                            .catch (err => {
+                            .catch(err => {
                                 res.status(500).json({ error: "The post could not be removed" });
                             });
                     } catch {
@@ -154,22 +155,22 @@ router.delete('/:id', (res, req) => {
 
 // put request for editing a post
 
-router.put('/:id', (res, req) => {
+router.put('/:id', (req, res) => {
     const id = req.params.id;
     const body = req.body;
     db.findById(id)
-        .then (r => {
+        .then(r => {
             if (r != []){
                 if (body.title && body.contents){
                     try {
                         db.update(id, body)
-                            .then (r => {
+                            .then(r => {
                                 if (r == 1){
                                     db.findById(id)
-                                        .then (r => {
+                                        .then(r => {
                                             res.status(200).json({data: r});
                                         })
-                                        .catch (err => {
+                                        .catch(err => {
                                             res.status(500).json({ error: "The post information could not be modified." });
                                         });
                                 }
@@ -177,7 +178,7 @@ router.put('/:id', (res, req) => {
                                     res.status(500).json({ error: "The post information could not be modified." });
                                 }
                             })
-                            .catch (err => {
+                            .catch(err => {
                                 res.status(500).json({ error: "The post information could not be modified." });
                             });
                     } catch {
@@ -190,7 +191,7 @@ router.put('/:id', (res, req) => {
                 res.status(404).json({ message: "The post with the specified ID does not exist." });
             }
         })
-        .catch (err => {
+        .catch(err => {
             res.status(404).json({ message: "The post with the specified ID does not exist." });
         });
 })
