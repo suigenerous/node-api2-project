@@ -50,6 +50,25 @@ router.post('/:id/comments', (res, req) => {
 
 // get request for returning posts
 
+router.get('/', (res, req) => {
+    try {
+        db.find()
+            .then(res => {
+                if (res != []){
+                    res.status(200).json({data: res});
+                }
+                else {
+                    res.status(500).json({ error: "The posts information could not be retrieved." });
+                };
+            })
+            .catch (err => {
+                res.status(500).json({ error: "The posts information could not be retrieved." });
+            })
+    } catch {
+        res.status(500).json({ error: "The posts information could not be retrieved." });
+    };
+})
+
 // get request for returning specific post
 
 // get request to return comments for a specific post
