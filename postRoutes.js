@@ -112,6 +112,35 @@ router.get('/:id/comments', (res, req) => {
 });
 // delete request for removing a post
 
+router.delete('/:id', (res, req) => {
+    try {
+        const id = req.params.id;
+        db.findById(id)
+            .then (res => {
+                if (res != []){
+                    try{
+                        db.remove(id)
+                            .then(res2 => {
+                                res.status(204).json({data: res});
+                            })
+                            .catch (err => {
+                                res.status(500).json({ error: "The post could not be removed" });
+                            });
+                    } catch {
+                        res.status(500).json({error: "internal server error"})
+                    };
+                } else {
+                    res.status(404).json({ message: "The post with the specified ID does not exist." });
+                };
+            })
+            .catch (err => {
+                res.status(500).json({ error: "The post information could not be retrieved." });
+            });
+    } catch {
+        res.status(500).json({ error: "internal server error or invalid request" });
+    };
+});
+
 // put request for editing a post
 
 // export router instance
