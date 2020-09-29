@@ -10,7 +10,7 @@ router.post('/', (req, res) => {
     if (body.title && body.contents){
         try {
             db.insert(body)
-                .then (r => {
+                .then(r => {
                     db.findById(r.id)
                         .then(post => {
                             res.status(201).json({data: post});
@@ -65,7 +65,7 @@ router.get('/', (req, res) => {
     try {
         db.find()
             .then(r => {
-                if (r != []){
+                if (r.length){
                     res.status(200).json({data: r});
                 }
                 else {
@@ -88,7 +88,7 @@ router.get('/:id', (req, res) => {
         const id = req.params.id;
         db.findById(id)
             .then(r => {
-                if (r != []){
+                if (r.length){
                     res.status(200).json({data: r});
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
@@ -109,7 +109,7 @@ router.get('/:id/comments', (req, res) => {
         const id = req.params.id;
         db.findPostComments(id)
             .then(r => {
-                if (r != []){
+                if (r.length){
                     res.status(200).json({data: r});
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
@@ -129,8 +129,8 @@ router.delete('/:id', (req, res) => {
         const id = req.params.id;
         db.findById(id)
             .then(r => {
-                if (r != []){
-                    try{
+                if (r.length){
+                    try {
                         db.remove(id)
                             .then(r2 => {
                                 res.status(204).json({data: r});
@@ -160,7 +160,7 @@ router.put('/:id', (req, res) => {
     const body = req.body;
     db.findById(id)
         .then(r => {
-            if (r != []){
+            if (r.length){
                 if (body.title && body.contents){
                     try {
                         db.update(id, body)
